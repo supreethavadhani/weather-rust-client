@@ -1,38 +1,51 @@
+use std::collections::HashMap;
+use reqwest::header::{AUTHORIZATION};
+
 mod model;
-
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // A hard-coded JSON
-    let json = r#"
-            {
-              "main": {
-                "temp": 30.94
-              }
-            }
-        "#;
-
-    // Deserialize the hardcoded JSON into a Weather struct
-    let weather1: model::Weather = serde_json::from_str(json).unwrap();
-
-    println!("\nWeather from a JSON we hard-coded locally:\n{:?}", weather1);
-
-    //
-    // Now that we know we can deserialize a hard-coded JSON into a struct model,
-    // let's see if we can fetch the weather from the backend.
-    //
-
+pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
+    let mut map = HashMap::new();
+    map.insert("username", "username");
+    map.insert("password", "password");
 
+
+    //v1/auth Endpoint
     let response = client
-        .get("https://api.openweathermap.org/data/2.5/weather?q=corvallis&appid=b98e3f089c86867862f28236d174368a&&units=imperial")
+        .post("http://localhost:3000/v1/auth")
+        .json(&map)
         .send()
         .await?;
 
-    let weather2 = response
-        .json::<model::Weather>()
-        .await?;
+    let token_response = response
+    .json::<model::TokenResponse>()
+    .await?;
 
-    println!("\nWeather from openweathermap.org:\n {:?}", weather2);
+    //v1/hello endpoint
+    let response1 = client
+    .get("http://localhost:3000/v1/hello")
+    .header(AUTHORIZATION, "Bearer ".to_owned()+&token_response.access_token)
+    .send()
+    .await?;
+
+    let hello = response1
+    .json::<model::HelloResponse>()
+    .await?;
+
+    //v1/weather
+    let response2 = client
+    .get("http://localhost:3000/v1/weather")
+    .header(AUTHORIZATION, "Bearer ".to_owned()+&token_response.access_token)
+    .send()
+    .await?;
+
+    let weather = response2
+    .json::<model::Weather>()
+    .await?;
+
+    println!(" {:?}", token_response);
+    println!(" {:?}", hello);
+    println!(" {:?}", weather);
 
     Ok(())
 }
