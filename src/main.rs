@@ -44,9 +44,9 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .json::<model::Weather>()
     .await?;
 
-    println!(" {:?}", token_response);
-    println!(" {:?}", hello);
-    println!(" {:?}", weather);
+    println!("The token response is {:?}", token_response);
+    println!("Hello greeting response {:?}", hello);
+    println!("Weather information response is {:?}", weather);
 
     Ok(())
 }
