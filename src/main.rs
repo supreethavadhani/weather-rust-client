@@ -6,6 +6,7 @@ mod model;
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
     let mut map = HashMap::new();
+    //map for username and password
     map.insert("username", "username");
     map.insert("password", "password");
 
